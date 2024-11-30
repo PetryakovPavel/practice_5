@@ -33,7 +33,29 @@ workbox.core.clientsClaim();
 self.__precacheManifest = [].concat(self.__precacheManifest || []);
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
+// Прокси для API Яндекс.Переводчика
+workbox.routing.registerRoute(
+  /https:\/\/translate\.api\.cloud\.yandex\.net\/translate\/v2\/translate/,
+  async ({ url }) => {
+    const apiKey = 'dict.1.1.20241129T153507Z.d8c1dcd9753a57dc.85a8eed0320168213a1874ab822582205226f41f'; // Замените на ваш API-ключ
+
+    const response = await fetch(`https://cors-anywhere.herokuapp.com/${url}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Api-Key ${apiKey}`
+      },
+      body: JSON.stringify({
+        targetLanguageCode: url.searchParams.get('lang'),
+        texts: [url.searchParams.get('text')],
+      }),
+    });
+
+    return response;
+  }
+);
+
+// Регистрация маршрута навигации
 workbox.routing.registerNavigationRoute(workbox.precaching.getCacheKeyForURL("/practice_5/index.html"), {
-  
-  blacklist: [/^\/_/,/\/[^/]+\.[^/]+$/],
+  blacklist: [/^\/_/, /\/[^/]+\.[^/]+$/],
 });
